@@ -22,33 +22,46 @@
 | 考试 | 随机抽题 + **选项乱序** → 必须按"题干关键词→选项内容"匹配题库作答；JS 模拟点击不可靠，必须走 CDP 真实点击 |
 | 互踢 | 单点登录：挂机/考试期间本人别在 Edge/App 登同账号 |
 
-## 依赖
-
-- 本地 [camofox-browser](https://github.com/jo-inc/camofox-browser)（隐身无头浏览器 REST 服务，`localhost:9377`）—— 也能换成任何有 CDP/页面操作能力的浏览器方案，脚本层要小改
-- Python 3.9+（仅标准库）
-
 ## 快速开始
 
+这是个 **agent skill** —— 装好后对 AI 说一句话就行，不用敲命令。
+
+**1) 安装 skill**（三选一，装完重启 agent 会话）：
+
 ```bash
-# 0) 登录态准备（一次性，人工登录，见 SKILL.md 前置条件）
-curl -s localhost:9377/health
-
-# 1) 挂机攒学时（维持 4 页并行，到 4.00 自动停）
-python3 tools/sup4.py 4
-
-# 2) 看进度
-python3 tools/baomi.py totals
-# {"grade": 4.08, "total": 25371, "studyRes": 25}
-
-# 3) 考试（课程页点"开始考试"进 /bmExam 后）
-python3 exam_take.py             # 按 bank.json 答题 + 自检，不交卷
-python3 exam_take.py x --submit  # 确认无误后交卷读分
-
-# 4) 课程页"证书"栏输入姓名 → 下载打印
+# opencode
+git clone https://github.com/tiancai4652/baomi-autostudy ~/.config/opencode/skills/baomi-autostudy
+# claude code
+git clone https://github.com/tiancai4652/baomi-autostudy ~/.claude/skills/baomi-autostudy
+# codex（无原生 skills 机制：把 SKILL.md 路径加进 ~/.codex/AGENTS.md 即可）
 ```
 
-装成 [opencode](https://opencode.ai) skill：把本目录拷到 `~/.config/opencode/skills/baomi-autostudy/`
-（claude code / codex 的 skills 目录同理）。agent 遇到"过保密观课时"会自动命中 SKILL.md。
+**2) 依赖**（agent 都能自己装，你也可以先跑）：本地 [camofox-browser](https://github.com/jo-inc/camofox-browser)
+（隐身浏览器服务 `localhost:9377`）+ Python 3.9+（仅标准库）。首次使用需人工登录一次保密观（agent 会弹窗让你输密码+滑块，之后登录态自动保持）。
+也可以直接对 agent 说："帮我装 camofox，然后过2026保密观"。
+
+**3) 开喊**：
+
+```
+你：帮我过2026保密观
+ai：当前学时 0/4.00。开始挂机学习，4 页并行约需 1-2 小时，我会持续汇报进度…
+    （到 4.00 后）学时完成，进入考试：20 题按题库作答，自检 20/20 已选中。交卷？
+你：交
+ai：考试 100 分（优秀），证书已生成，去课程页"证书"栏输入你的姓名下载打印。
+```
+
+agent 会自己命中 SKILL.md 并按里面的 SOP 执行（挂机、考试、证书全流程）。
+
+<details>
+<summary>手动命令模式（调试用）</summary>
+
+```bash
+python3 tools/sup4.py 4        # 4 页并行挂机，到 4.00 自动停
+python3 tools/baomi.py totals  # 查进度
+python3 exam_take.py           # 答题自检；exam_take.py x --submit 交卷
+```
+
+</details>
 
 ## 题库（bank.json）
 
